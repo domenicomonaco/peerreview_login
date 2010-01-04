@@ -5,7 +5,7 @@ $(document).ready(
   
   $(".palette-wizard").click(
     function(){
-    $(".box_box").slideToggle("fast");
+    $(".box_box").slideToggle("slow");
 		$(this).toggleClass("active"); return false; 
     return false;
   });

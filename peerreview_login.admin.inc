@@ -166,21 +166,19 @@ $form[$nf_buttons] = array(
 
 function _peerreview_settingavaliable($in){
 $var=variable_get('peerreview_login_badge_mode','');
-
-if($in=='peerreview_login_wizard_logged_content'){
-  $var=variable_get('peerreview_login_buttons','');
-  if(!($var['wizard']=='0')){
-return false;
-}
-else if($var['wizard']=='0'){
-return true;
-}
-}
-if(!($var['enable']=='0')){
-return false;
-}
-else if($var['enable']=='0'){
-return true;
-}
-
+  if($in=='peerreview_login_wizard_logged_content'){
+    $var=variable_get('peerreview_login_buttons','');
+      if(!($var['wizard']=='0')){
+        return false;
+      }
+      else if($var['wizard']=='0'){
+        return true;
+      }
+  }
+  if(!($var['enable']=='0')){
+    return false;
+  }
+  else if($var['enable']=='0'){
+    return true;
+  }
 }
