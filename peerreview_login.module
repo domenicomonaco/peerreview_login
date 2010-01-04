@@ -2,7 +2,10 @@
 // $Id$
 
 /**
- * 
+ * Author Domenico Monaco
+ * kiuz.4ever@gmail.com
+ * http://www.kiuz.it
+ * License: GPLv2
  **/
 
 function peerreview_login_init() {
