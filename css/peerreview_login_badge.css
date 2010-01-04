@@ -1,0 +1,46 @@
+.palette{
+background:#333333 none repeat scroll 0 0;
+border-left:1px solid #000000;
+border-top:1px solid #000000;
+bottom:0;
+color:#FFFFFF;
+
+font-size:13px;
+right:0;
+
+margin-right:20px;
+padding:7px;
+position:fixed;
+clear:both;
+
+}
+  .box_box{  
+background:#333333 none repeat scroll 0 0;
+color:#FFFFFF;
+    width:320px;
+    position:absolute;
+    right:0px;
+    bottom:50px;
+    display:none;
+    
+  }
+  
+  .peerreview-buttons{
+  display:inline;
+  float:right;
+  margin:5px;
+  }
+  .peerreview-buttons .form-item{
+  display:inline;
+  width:100px;
+  }
+  .peerreview-buttons .form-item label, .peerreview-buttons .form-submit{
+  display:none;
+  }
+  .peerreview-buttons .search-form{
+  display:inline;
+  width:auto;
+  }
+  .peerreview-buttons .form-text{
+  width:100px;
+  }

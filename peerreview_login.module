@@ -1,0 +1,191 @@
+<?php
+// $Id$
+
+/**
+ * 
+ **/
+
+function peerreview_login_init() {
+  $csspath = drupal_get_path('module', 'peerreview_login') .'/css/';
+    drupal_add_css($csspath .'peerreview_login_badge.css');
+  
+  $jspath = drupal_get_path('module', 'peerreview_login') .'/js/';
+    drupal_add_js($jspath .'main.js');
+}
+
+function peerreview_login_menu() {
+  $items = array();
+  
+  $items['admin/build/perreviewlogin']   =  array(
+    'title' => 'Peer Review Login Setting',
+    'description' => 'Option of peerreview login box.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('peerreview_login_setting'),
+    'access arguments' => array('adminster site configuration'),
+    'file' => 'peerreview_login.admin.inc',
+    'type' => MENU_NORMAL_ITEM
+  );
+  
+  return $items;
+}
+
+/**
+  *
+  **/
+function peerreview_login_footer($main = 0) {
+  $var=variable_get('peerreview_login_badge_mode','');
+  if(!($var['enable']=='0')){
+    return _peerreview_login_show_palette();
+  }
+}
+
+function peerreview_login_block($op = 'list', $delta = 0) {
+  switch ($op) {
+    case 'list':
+      $blocks[0] = array(
+        'info' => t('Peerreview Login')
+      );
+      return $blocks;
+
+    case 'view': default:
+      switch ($delta) {
+        case 0:
+          $block['subject'] = t('Peerreview Login');
+          $block['content'] = _peerreview_login_block();
+          break;
+      }
+      return $block;
+  }
+  }
+
+function _peerreview_login_block(){
+  global $user;
+  global $base_url;
+  $out='';
+  if($user->uid) {
+    if(!($var['topancor']=='0')){
+      return '<a name="peerreviewlogin_top_page"></a>';
+    }
+    }else{
+      $var=variable_get('peerreview_login_wizard_unlogged_content','');
+      if($var['loginform']=='0'){
+        return '<a name="peerreviewlogin_top_page"></a>' . drupal_get_form('user_login_block');
+      }
+    }
+}
+
+function _peerreview_login_getbage() {
+  $out='';
+  global $user;
+  $icopath = drupal_get_path('module', 'peerreview_login') .'/img/ico/'; 
+  $var = variable_get('peerreview_login_buttons','');
+
+  if(!($var['setting'] == '0')) {
+    $out['setting-ico'] = l('<img src="' . $icopath . 'gears.png" alt="' . $user->name .' gears" height="'. variable_get('peerreview_login_bar_height', '') . '" width="'. variable_get('peerreview_login_bar_height', '') . '" class="setting-user-profile" />', 'user' . '/' . $user->uid . '/edit', array('html'=>TRUE));
+  }
+  if(!($var['avatar'] == '0')) {
+    if(!$user->picture) {
+      $avatar = $icopath . 'user.png';
+    } else if($user->picture) {
+      $avatar = $user->picture;
+    }
+    $size = variable_get('peerreview_login_bar_height', '');
+    
+    if (variable_get('peerreview_login_option_avatar', '')=='linkprofile') {
+      $out['avatar'] = l('<img src="' . $avatar . '" alt="' . $user->name .'picture" height="' . $size . '" width="'. $size . '" class="user-profile" />','user' . '/' . $user->uid, array('html'=>TRUE));
+    }else if(variable_get('peerreview_login_option_avatar', '')=='default'){
+      $out['avatar'] = '<img src="' . $avatar . '" alt="' . $user->name .'picture" height="' . $size . '" width="'. $size . '" class="user-profile" />';
+    }
+    }
+  
+  if(!($var['username'] == '0')) {
+    $out['username'] = _prl_span(l($user->name,'user/' . $user->uid), 'username');
+  }
+  if(!($var['email'] == '0')) {
+    $out['email'] = _prl_span($user->mail,'email');
+  }
+  if(!($var['currentimestamp'] == '0')) {
+    $out['currentimestamp'] = _prl_span(date('d/m/y - H:i:s',($user->timestamp)+($user->timezone)),'currentimestamp');
+  }
+  if(!($var['karma'] == '0')) {
+    $out['karma'] = _prl_span('Karma: +10','karma');
+  }
+  
+  if(!($var['topancor'] == '0')) {
+    $out['topancor'] = _prl_span('<a href="#peerreviewlogin_top_page">' . t('Top') . '</a>','topancor');
+  }
+
+  if(!($var['homelink'] == '0')) {
+    $out['homelink'] = _prl_span(l(t('Home'), $base_url),'homelink');
+  }
+  
+  if(!($var['wizard'] == '0')) {
+    $out['wizard'] = _prl_span('<a class="palette-wizard" href="#wizard">' . t('Wizard') . '</a>','wizard'); 
+  }
+
+  if(!($var['search'] == '0')) {
+    $out['search'] = _prl_span(drupal_get_form('search_form'),'search');
+  }
+  
+  $output=implode(' ',$out);
+return $output;
+}
+
+function _peerreview_login_slidebox(){
+  $out='';
+  global $user;
+  $icopath = drupal_get_path('module', 'peerreview_login') .'/img/ico/';
+
+    if(!($user->uid)){
+    $var=variable_get('peerreview_login_wizard_unlogged_content','');
+      if(!($var['loginform']=='0')){
+        $out[]='<div class="box_box login">';
+        $out[]= drupal_get_form('user_login_block');
+        $out[]='</div>';
+    }
+    }else{
+    $out[]='<div class="box_box login">';
+    $var=variable_get('peerreview_login_wizard_logged_content','');
+      if(!($var['email']=='0')){
+        $out['email']=$user->mail;
+      }
+      
+      if(!($var['avatar']=='0')){
+        if(!$user->picture){
+          $out['avatar']='<img src="' . $icopath . 'user.png" alt="' . $user->name .' personal picture" class="user-profile" />';
+        }
+      }
+      
+      if(!($var['memberfrom']=='0')){
+        $out['created-time']=date('d/m/y - H:i:s',($user->created)+($user->timezone));
+      }
+      if(!($var['lastlogin']=='0')){
+        $out['login-time']=date('d/m/y - H:i:s',($user->login)+($user->timezone));
+      }
+      if(!($var['search']=='0')){
+        $out['search']=drupal_get_form('search_form');
+      }
+    
+    $out[]='</div>';
+    }
+  
+$output=implode(' ',$out);
+return $output;
+}
+
+function _peerreview_login_show_palette(){
+  global $user;
+  $var=variable_get('peerreview_login_badge_submode','');
+    
+  if(!($user->uid) || !($var['unlogged']=='0')){
+    //animous show if option unlogged is active
+    return '<div class="palette"><div id="block_box">'  . _peerreview_login_slidebox() . '</div><div id="tabs_menu">' . _peerreview_login_getbage() . '</div></div>';
+  }
+  else if(($user->uid) || !($var['logged']=='0')){
+      return '<div class="palette"><div id="block_box">'  . _peerreview_login_slidebox() . '</div><div id="tabs_menu">' . _peerreview_login_getbage() . '</div></div>';
+  }
+}
+
+function _prl_span($content,$attrib) {
+  return '<span class="peerreview-buttons ' . $attrib . '">' . $content . '</span>';
+}

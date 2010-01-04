@@ -1,0 +1,15 @@
+; $Id
+
+name = Peerreview Login Box
+description = Useful Login Box
+package = peerreview
+dependencies[] = block
+dependencies[] = profile
+core = 6.x
+
+; Information added by drupal.org packaging script on 2009-09-23
+version = "6.x-1.0.0"
+core = "6.x"
+project = "peerreview-login"
+datestamp = "1262171821" 
+
