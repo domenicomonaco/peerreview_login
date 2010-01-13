@@ -155,7 +155,7 @@ function peerreview_login_preprocess_peerreview_login_badge(&$variables) {
   }
 
   // Order System
-  $custom_sorting=array(
+  $custom_sorting = array(
       'wizard',
       'avatar',
       'setting',
