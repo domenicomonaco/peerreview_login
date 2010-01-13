@@ -2,183 +2,308 @@
 // $Id$
 
 /**
- * 
- * @file
- * Domenico Monaco / info@kiuz.it / www.kiuz.it
- */
+ * Author Domenico Monaco
+ * kiuz.4ever@gmail.com
+ * http://www.kiuz.it
+ * License: GPLv2
+ **/
 
-
-/**
- * Area amministrativa
- * Mostra la login e le informazioni utente in un blocco al top della pagina (checkbox)
-
-(se la precedente checkbox è spuntata attiva tutte le voci della domanda sottostante, altrimenti lasciale grigie, inattive)
-Scegli quali informazioni mostrare:
-
-    * Reputation (se attivo modulo user_karma) (checkbox)
-    * Avatar (checkbox)
-    * Button Aggiuntivi non previsti, è utile prevedere l'estendibilità della barra (PROPOSTA)
-    * Pulsante che ritorna al "topAcor" nella pagina corrente (in funzione)
-    * Pulsante torna alla Home (in funzione)
-    * Ora corrente (in funzione)
-    * Edit Profile (in funzione)
-    * Pulsante Wizard (in via di svilupp) = Pulsante jolly: Se loggato mostra finestra animata con informazioni a vostra scelta, se non loggati mostra Finestra di Login sempre con animazione slide;
-    
-    Utili funzioni che possiamo aggiungere per rendere appetibile il modulo
-    + Possibilità di ordinare gli elementi;
-    + Possibilità di aggiugere elementi in modo custom;
-    + Uso delle icone, le icone dovranno avere lo stesso nome della variabile in questo modo se si aggiunge una nuova variabile custom sapppiamo già in anticipo quale nome dovrà a avere la sua rispettiva icona;
-    + Possibilità di un form di ricerca nella barra;
-    + Strutturazione dei Div sufficentemente "elastica" da poter essere editata via Css e dare un aspetto accattivante al badge;
-
-Mostra le informazioni dell'utente loggato in overlay (checkbox)
-Lato utente¶
-
-Utilizza i controlli sulle variabili che setti tramite l'area amministrativa per visualizzare in determinate posizioni i blocchi.
-Tieni di default il seguente ordine quando estrai i dati:
-
-Avatar - Nickname(cliccabile) - Reputation - Campo1 - Campo2 - Campo3
-
-**/
 function peerreview_login_setting() {
 
-  $opt_mode=array(
-  'enable'=>t('Enable'),
-  );
-  
-  $nf_mode='peerreview_login_badge_mode';
-  $form[$nf_mode] = array(
+  $form['peerreview_login_badge_mode'] = array(
     '#type' => 'checkboxes',
-    '#title' => 'Utilizza il badge dopo il login',
-    '#options' => $opt_mode,
-    '#default_value' => variable_get($nf_mode, ''),
-    '#description' => '',    
+    '#title' => 'Attivazione PeerReview login Module',
+    '#options' => array('enable'=>t('Enable')),
+    '#default_value' => variable_get('peerreview_login_badge_mode', ''),
+    '#description' => 'Opzione principale dell\'intero modulo, se attivo da accesso a tutte le altre impostazione, se inattivo impedirà il completo funzionamento del modulo.',
   );
   
-  $opt_submode=array(
-  'logged'=>t('View logged user'),
-  'unlogged'=>t('View unlogged users')
-  );
-  
-  $nf_submode='peerreview_login_badge_submode';
-  $form[$nf_submode] = array(
+  $form['peerreview_login_badge_submode'] = array(
     '#type' => 'checkboxes',
-    '#title' => 'Utilizza il badge dopo il login',
-    '#options' => $opt_submode,
-    '#default_value' => variable_get($nf_submode, ''),
+    '#title' => 'Attivazione della barra per gli <em>stati</em> disponibili',
+    '#options' => array(
+      'unlogged'=> t('Unlogged User'),
+      'logged'=> t('Logged User')
+      ),
+    '#default_value' => variable_get('peerreview_login_badge_submode', ''),
+    '#disabled'=>_prl_check_var('peerreview_login_badge_mode','enable'),
+    '#description' => 'Permette di attivare/disattivare genericamente in modo separato la visualizzazione della barra in base allo stato in cui si trova l\'utente che accede al sito.',
+  );
+  
+  $form['peerreview_login_bar_height'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Height'),
+    '#default_value' => variable_get('peerreview_login_bar_height', ''),
+    '#size' => 5,
+    '#maxlength' => 4,
+    '#disabled'=>_prl_check_var('peerreview_login_badge_mode','enable'),
+    '#description' => t('Inserisci l\'altezza massima che devono possedere le icone nel badge. Vincolerà solo la dimensione delle icone in altezza non in larghezza. Inserire la dimensione in pixel comprensivo della dicitura "px", es. "48px"')
+  );
+  
+  $form['peerreview_login_logged_buttons'] = array(
+    '#type' => 'checkboxes',
+    '#title' => 'Attiva gli elementi della barra per lo stato <em>LOGGED</em>',
+    '#options' => _prl_check_element_list('logged'),
+    '#default_value' => variable_get('peerreview_login_logged_buttons', ''),
+    '#disabled'=>_prl_check_var('peerreview_login_badge_submode','logged'),
+    '#description' => 'Selezioni gli elementi che desideri attivare nella barra nello stato LOGGED. La presenza o meno di un elemento nella lista è dovuto dalla sua stessa definizione.',
+  );
+
+  $form['peerreview_login_unlogged_buttons'] = array(
+    '#type' => 'checkboxes',
+    '#title' => 'Attiva gli elementi della barra per lo stato <em>UNLOGGED</em>',
+    '#options' => _prl_check_element_list('unlogged'),
+    '#default_value' => variable_get('peerreview_login_unlogged_buttons', ''),
+    '#disabled'=>_prl_check_var('peerreview_login_badge_submode','unlogged'),
+    '#description' => 'Selezioni gli elementi che desideri attivare nella barra nello stato UNLOGGED. La presenza o meno di un elemento nella lista è dovuto dalla sua stessa definizione.',
+  );
+  
+
+  /**
+    * Wizard Slider Block Options
+    **/
+
+  $form['wizard_slider'] = array(
+   '#type' => 'fieldset',
+    '#title' => t('Wizard Slider Block Options'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+
+  $form['wizard_slider']['wizard_slider_logged'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Wizard Slider Block Options on LOGGED state '),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE
+  );
+
+  $form['wizard_slider']['wizard_slider_logged']['wizard_slider_logged_element'] = array(
+    '#type' => 'checkboxes',
+    '#title' => 'Attiva elementi nello Wizard Slider Block nello stato LOGGED',
+    '#options' => _prl_check_element_list('logged'),
+    '#default_value' => variable_get('wizard_slider_logged_element', ''),
+    '#description' => ''
+  );
+
+  foreach(variable_get('wizard_slider_logged_element', '') as $wizard_logged_element){
+    if(!($wizard_logged_element == '0')){
+      
+      $form['wizard_slider']['wizard_slider_logged']['wizard_slider_logged_element_' . $wizard_logged_element] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Opzioni per ' . $wizard_logged_element),
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE
+      );
+
+      $form['wizard_slider']['wizard_slider_logged']['wizard_slider_logged_element_' . $wizard_logged_element]['wizard_slider_logged_element_' . $wizard_logged_element . '_text'] = array(
+        '#type' => 'select',
+        '#title' => t('Text option'),
+        '#options' => array('default'=>t('default'),'disable'=>t('Disbaled')),
+        '#description' => t(''),
+        '#default_value' => variable_get('wizard_slider_logged_element_' . $wizard_logged_element . '_text', 0),
+        '#disabled'=>_prl_check_var('peerreview_login_logged_buttons','wizard'),
+      );
+  
+      $form['wizard_slider']['wizard_slider_logged']['wizard_slider_logged_element_' . $wizard_logged_element]['wizard_slider_logged_element_' . $wizard_logged_element . '_icon'] = array(
+        '#type' => 'select',
+        '#title' => t('Icon option'),
+        '#options' => array('default'=>t('default'),'disable'=>t('Disbaled')),
+        '#description' => t(''),
+        '#default_value' => variable_get('wizard_slider_logged_element_' . $wizard_logged_element . '_icon', 0),
+        '#disabled'=>_prl_check_var('peerreview_login_logged_buttons','wizard'),
+      );
+      
+      $form['wizard_slider']['wizard_slider_logged']['wizard_slider_logged_element_' . $wizard_logged_element]['wizard_slider_logged_element_' . $wizard_logged_element . '_link'] = array(
+        '#type' => 'select',
+        '#title' => t('Link option'),
+        '#options' => array('default'=>t('default'),'disable'=>t('Disbaled')),
+        '#description' => t(''),
+        '#default_value' => variable_get('wizard_slider_logged_element_' . $wizard_logged_element . '_link', 0),
+        '#disabled'=>_prl_check_var('peerreview_login_logged_buttons','wizard'),
+      );
+  
+    }
+  }
+
+  $form['wizard_slider']['wizard_slider_unlogged'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Wizard Slider Block Options on UNLOGGED state '),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE
+  );
+
+  $form['wizard_slider']['wizard_slider_unlogged']['wizard_slider_unlogged_element'] = array(
+    '#type' => 'checkboxes',
+    '#title' => 'Attiva elementi nello Wizard Slider Block nello stato UNLOGGED',
+    '#options' => _prl_check_element_list('unlogged'),
+    '#default_value' => variable_get('wizard_slider_unlogged_element', ''),
     '#description' => '',
   );
-  
-  $peerreview_bh='peerreview_login_bar_height';
-  $form[$peerreview_bh] = array(
-  '#type' => 'textfield',
-  '#title' => t('Height'),
-  '#default_value' => variable_get($peerreview_bh, ''),
-  '#size' => 5,
-  '#maxlength' => 4,
-  '#disabled'=>_peerreview_settingavaliable(''),
-  '#description' => t('Inserisci l\'altezza massima che devono possedere le icone nel badge. Vincolerà solo la dimensione delle icone in altezza non in larghezza. Inserire la dimensione in pixel comprensivo della dicitura "px", es. "48px"')
-  );
-  
-  
-  
-$opt_buttons=array(
-  'wizard'=>t('Wizard Button'),
-  'homelink'=>t('Home Link'),
-  'topancor'=>t('Link to top Ancor'),
-  'avatar'=>t('Avatar'),
-  'username'=>t('Nick Name'),
-  'setting'=>t('Edit Profile'),
-  'karma'=>t('karma'),
-  'email'=>t('e-mail'),
-  'currentimestamp'=>t('Current timestamp'),
-  'search'=>t('Serach Form')
-);
-$nf_buttons='peerreview_login_buttons';
-$form[$nf_buttons] = array(
-  '#type' => 'checkboxes',
-  '#title' => 'Utilizza il badge dopo il login',
-  '#options' => $opt_buttons,
-  '#default_value' => variable_get($nf_buttons, ''),
-  '#disabled'=>_peerreview_settingavaliable(''),
-  '#description' => '',
-);
 
+  foreach(variable_get('wizard_slider_unlogged_element', '') as $wizard_unlogged_element){
+    if(!($wizard_unlogged_element == '0')){
+      
+      $form['wizard_slider']['wizard_slider_unlogged']['wizard_slider_unlogged_element_' . $wizard_unlogged_element] = array(
+       '#type' => 'fieldset',
+       '#title' => t('Opzioni per ' . $wizard_unlogged_element),
+       '#collapsible' => TRUE,
+       '#collapsed' => TRUE
+     );
 
-/**
-  * This section is largely copied from block.admin.inc.
-  */
-  $form['peerreview_login_wizard_options'] = array(
+     $form['wizard_slider']['wizard_slider_unlogged']['wizard_slider_unlogged_element_' . $wizard_unlogged_element]['wizard_slider_unlogged_element_' . $wizard_unlogged_element . '_text'] = array(
+       '#type' => 'select',
+       '#title' => t('Text option'),
+       '#options' => array('default'=>t('default'),'disable'=>t('Disbaled')),
+       '#description' => t(''),
+       '#default_value' => variable_get('wizard_slider_unlogged_element_' . $wizard_unlogged_element . '_text', 0),
+       '#disabled'=>_prl_check_var('peerreview_login_unlogged_buttons','wizard'),
+     );
+     
+      $form['wizard_slider']['wizard_slider_unlogged']['wizard_slider_unlogged_element_' . $wizard_unlogged_element]['wizard_slider_unlogged_element_' . $wizard_unlogged_element . '_icon'] = array(
+        '#type' => 'select',
+        '#title' => t('Icon option'),
+        '#options' => array('default'=>t('default'),'disable'=>t('Disbaled')),
+        '#description' => t(''),
+        '#default_value' => variable_get('wizard_slider_unlogged_element_' . $wizard_unlogged_element . '_icon', 0),
+        '#disabled'=>_prl_check_var('peerreview_login_unlogged_buttons','wizard'),
+      );
+
+      $form['wizard_slider']['wizard_slider_unlogged']['wizard_slider_unlogged_element_' . $wizard_unlogged_element]['wizard_slider_unlogged_element_' . $wizard_unlogged_element . '_link'] = array(
+        '#type' => 'select',
+        '#title' => t('Link option'),
+        '#options' => array('default'=>t('default'),'disable'=>t('Disbaled')),
+        '#description' => t(''),
+        '#default_value' => variable_get('wizard_slider_unlogged_element_' . $wizard_unlogged_element . '_link', 0),
+        '#disabled'=>_prl_check_var('peerreview_login_unlogged_buttons','wizard'),
+      );
+
+    }
+  }
+  
+  /**
+    * 
+    **/
+  $form['fixed_bar'] = array(
+   '#type' => 'fieldset',
+    '#title' => t('Fixed Bar Options'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+
+  $form['fixed_bar']['fixed_bar_logged'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Wizard Button specific visibility settings'),
-    '#collapsible' => TRUE, 
-    
+    '#title' => t('Fixed Bar Options nello stato LOGGED'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE
   );
-  $form['peerreview_login_wizard_options']['peerreview_login_wizard_logged_content'] = array(
-    '#type' => 'checkboxes',
-    '#title' => t('Content Logged User'),
-    '#options' => array(
-      'avatar'=>t('Avatar'),
-      'email'=>t('E-mail'),
-      'memberfrom'=>t('Member from ...'),
-      'lastlogin'=>t('Last login'),
-      'search'=>'Serach form'),
-    '#disabled'=>_peerreview_settingavaliable('peerreview_login_wizard_logged_content'),
-    '#description' => t('Allow individual users to customize the visibility of the appbar in their account settings.'),
-    '#default_value' => variable_get('peerreview_login_wizard_logged_content', 0),
-  );
-    $form['peerreview_login_wizard_options']['peerreview_login_wizard_unlogged_content'] = array(
-    '#type' => 'checkboxes',
-    '#title' => t('Content Unlogged User'),
-    '#options' => array(
-      'loginform'=>t('User Login Form'),
-    ),
-    '#disabled'=>_peerreview_settingavaliable('peerreview_login_wizard_logged_content'),
-    '#description' => t(''),
-    '#default_value' => variable_get('peerreview_login_wizard_unlogged_content', ''),
-  );
+
+  //peerreview_login_logged_buttons
+  foreach(variable_get('peerreview_login_logged_buttons', '') as $bar_logged_element){
+    if(!($bar_logged_element == '0')){
+      
+      $form['fixed_bar']['fixed_bar_logged']['fixed_bar_logged_element_' . $bar_logged_element] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Opzioni per ' . $bar_logged_element),
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE
+      );
+
+      $form['fixed_bar']['fixed_bar_logged']['fixed_bar_logged_element_' . $bar_logged_element]['peerreview_login_fixed_bar_logged_element_' . $bar_logged_element . '_text'] = array(
+        '#type' => 'select',
+        '#title' => t('Text option'),
+        '#options' => array('default'=>t('default'),'disable'=>t('Disbaled')),
+        '#description' => t(''),
+        '#default_value' => variable_get('peerreview_login_fixed_bar_logged_element_' . $bar_logged_element . '_text', 0),
+        '#disabled'=>_prl_check_var('peerreview_login_badge_submode','logged'),
+      );
   
+      $form['fixed_bar']['fixed_bar_logged']['fixed_bar_logged_element_' . $bar_logged_element]['peerreview_login_fixed_bar_logged_element_' . $bar_logged_element . '_icon'] = array(
+        '#type' => 'select',
+        '#title' => t('Icon option'),
+        '#options' => array('default'=>t('default'),'disable'=>t('Disbaled')),
+        '#description' => t(''),
+        '#default_value' => variable_get('peerreview_login_fixed_bar_logged_element_' . $bar_logged_element . '_icon', 0),
+        '#disabled'=>_prl_check_var('peerreview_login_badge_submode','logged'),
+      );
+      
+      $form['fixed_bar']['fixed_bar_logged']['fixed_bar_logged_element_' . $bar_logged_element]['peerreview_login_fixed_bar_logged_element_' . $bar_logged_element . '_link'] = array(
+        '#type' => 'select',
+        '#title' => t('Link option'),
+        '#options' => array('default'=>t('default'),'disable'=>t('Disbaled')),
+        '#description' => t(''),
+        '#default_value' => variable_get('peerreview_login_fixed_bar_logged_element_' . $bar_logged_element . '_link', 0),
+        '#disabled'=>_prl_check_var('peerreview_login_badge_submode','logged'),
+      );
   
-  
-  $form['peerreview_login_single_button_options'] = array(
+    }
+  }
+   
+  $form['fixed_bar']['fixed_bar_unlogged'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Single button options'),
-    '#collapsible' => TRUE, 
+    '#title' => t('Fixed Bar Options nello stato UNLOGGED'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE
   );
- $form['peerreview_login_single_button_options']['peerreview_login_option_avatar'] = array(
-    '#type' => 'select',
-    '#title' => t('Avatar'),
-    '#options' => array(
-      'default'=>t('Default'),
-      'linkprofile'=>t('Link to Prifile'),
-      ),
-    //'#disabled'=>_peerreview_settingavaliable('peerreview_login_wizard_logged_content'),
-    //'#description' => t('Allow individual users to customize the visibility of the appbar in their account settings.'),
-    '#default_value' => variable_get('peerreview_login_option_avatar', 0),
-  );  
   
+  //peerreview_login_unlogged_buttons
+  foreach(variable_get('peerreview_login_unlogged_buttons', '') as $bar_unlogged_element){
+    if(!($bar_unlogged_element == '0')){
+      
+      $form['fixed_bar']['fixed_bar_unlogged']['fixed_bar_unlogged_element_' . $bar_unlogged_element] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Opzioni per ' . $bar_unlogged_element),
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE
+      );
+
+      $form['fixed_bar']['fixed_bar_unlogged']['fixed_bar_unlogged_element_' . $bar_unlogged_element]['peerreview_login_fixed_bar_unlogged_element_' . $bar_unlogged_element . '_text'] = array(
+        '#type' => 'select',
+        '#title' => t('Text option'),
+        '#options' => array('default'=>t('default'),'disable'=>t('Disbaled')),
+        '#description' => t(''),
+        '#default_value' => variable_get('peerreview_login_fixed_bar_logged_element_' . $bar_logged_element . '_text', 0),
+        '#disabled'=>_prl_check_var('peerreview_login_badge_submode','unlogged'),
+      );
   
-  
-  
+      $form['fixed_bar']['fixed_bar_unlogged']['fixed_bar_unlogged_element_' . $bar_unlogged_element]['peerreview_login_fixed_bar_unlogged_element_' . $bar_unlogged_element . '_icon'] = array(
+        '#type' => 'select',
+        '#title' => t('Icon option'),
+        '#options' => array('default'=>t('default'),'disable'=>t('Disbaled')),
+        '#description' => t(''),
+        '#default_value' => variable_get('peerreview_login_fixed_bar_logged_element_' . $bar_logged_element . '_icon', 0),
+        '#disabled'=>_prl_check_var('peerreview_login_badge_submode','unlogged'),
+      );
+      
+      $form['fixed_bar']['fixed_bar_unlogged']['fixed_bar_unlogged_element_' . $bar_unlogged_element]['peerreview_login_fixed_bar_unlogged_element_' . $bar_unlogged_element . '_link'] = array(
+        '#type' => 'select',
+        '#title' => t('Link option'),
+        '#options' => array('default'=>t('default'),'disable'=>t('Disbaled')),
+        '#description' => t(''),
+        '#default_value' => variable_get('peerreview_login_fixed_bar_logged_element_' . $bar_logged_element . '_link', 0),
+        '#disabled'=>_prl_check_var('peerreview_login_badge_submode','unlogged'),
+      );
+    }
+  }
+
   return system_settings_form($form);
 }
 
 
-function _peerreview_settingavaliable($in){
-$var=variable_get('peerreview_login_badge_mode','');
-  if($in=='peerreview_login_wizard_logged_content'){
-    $var=variable_get('peerreview_login_buttons','');
-      if(!($var['wizard']=='0')){
-        return false;
-      }
-      else if($var['wizard']=='0'){
-        return true;
-      }
+function _prl_check_var($variable,$key) {
+  $vars=variable_get($variable,'');
+    if(!($vars[$key]=='0')) {
+      return FALSE;
+    } elseif ($vars[$key]== '0') {
+      return TRUE;
+    }
+}
+
+function _prl_check_element_list($ask){
+$element=(_prl_get_element('all',$ask));
+
+$key_element = array_keys($element);
+  foreach($key_element as $key){
+    $out[$key]=$key;
   }
-  if(!($var['enable']=='0')){
-    return false;
-  }
-  else if($var['enable']=='0'){
-    return true;
-  }
+return $out;   
 }
