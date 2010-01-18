@@ -83,10 +83,14 @@ function _peerreview_login_block() {
   **/
 function peerreview_login_footer($main = 0) {
   $mode_check_option=variable_get('peerreview_login_badge_mode','');
-  if(!($mode_check_option['enable'] == '0')){ //Checking if is enabled "main" option
-    return _peerreview_login_show_palette();
+  if($mode_check_option!=NULL){
+    //Checking if is enabled "main" option
+    if(!($mode_check_option['enable'] == '0')){
+      return _peerreview_login_show_palette();
+    }
   }
 }
+
 
 /**
   * _peerreview_login_show_palette()
@@ -109,11 +113,13 @@ function _peerreview_login_show_palette(){
     $current_bool_state = 0;
   }
 
+if(variable_get('peerreview_login_badge_mode', '') !== 'disable'){
   $sub_mode_check_option=variable_get('peerreview_login_badge_submode','');
   
   if($sub_mode_check_option[$current_text_state] !== 0){
     return theme('peerreview_login_badge');
   }
+}
 }
 
 /**
@@ -137,7 +143,7 @@ function peerreview_login_preprocess_peerreview_login_badge(&$variables) {
   // Pre-Setting
   $out='';
   global $user;
-  //$icopath = drupal_get_path('module', 'peerreview_login') .'/img/ico/'; 
+  //$icopath = drupal_get_path('module', 'peerreview_login') .'/img/ico/';
   //$var = variable_get('peerreview_login_buttons','');
  
   //Setting state
@@ -148,14 +154,23 @@ function peerreview_login_preprocess_peerreview_login_badge(&$variables) {
   }
   
   //Check variable to print in base to current_state
-  foreach(variable_get('peerreview_login_' . $current_state  . '_buttons', '') as $element){
-    if(!($element  == '0')){
-      $out[$element]=_prl_get_element($element,'');
+  $check = variable_get('peerreview_login_' . $current_state  . '_buttons', '');
+  if(is_array($check)) {
+    foreach(variable_get('peerreview_login_' . $current_state  . '_buttons', '') as $element){
+      if(!($element  == '0')){
+        $out[$element]=_prl_get_element($element,'');
+      }
     }
-  }
 
+  if($out==null){
+    $out['default']=_prl_get_element('default','');
+  }
+  }
+  
   // Order System
   $custom_sorting = array(
+      'time',
+      'default',
       'wizard',
       'avatar',
       'setting',
@@ -192,13 +207,20 @@ function peerreview_login_preprocess_peerreview_login_wizard_box(&$variables) {
   
   //Check variable to print in base to current_state
   //wizard_slider_logged_element
-  foreach(variable_get('wizard_slider_' . $current_state  . '_element', '') as $element){
-    if(!($element  == '0')){
-      $out[$element]=_prl_get_element($element,'');
+  $check = variable_get('peerreview_login_wizard_slider_' . $current_state  . '_element', '');
+  if(is_array($check)) {
+    foreach(variable_get('peerreview_login_wizard_slider_' . $current_state  . '_element', '') as $element){
+      if(!($element  == '0')){
+        $out[$element]=_prl_get_element($element,'');
+        $variables[$element] = _prl_get_element($element,'');
+      }
     }
   }
-  
-  $output=implode(' ',$out);
+  if(is_array($out)) {
+    $output = implode(' ',$out);
+  } else {
+    $output = $out;
+  }
   
   $variables['content'] = $output;
 }
@@ -229,19 +251,27 @@ function _prl_get_element($request,$option){
   }
   
   $element['wizard'] = array(
-  'text' => t('wizard'),
-  'ico' => TRUE,
+  'text' => FALSE,
+  'ico' => 'user',
   'path' => '#wizard',
   'class' => 'palette-wizard',
   'default_wheight'=> -10,
   'perm_state' => array(1,1),
   );
-        
+  $element['time'] = array(
+  'text' => (date("l, F d, Y H:i",$time=time()+variable_get('date_default_timezone','0'))),
+  'ico' => TRUE,
+  'class' => 'time',
+  'default_wheight'=> -10,
+  'perm_state' => array(1,1),
+  );
+          
   $element['avatar'] = array(
   'path' => 'user' . '/' . $user->uid,
   'option'=>'ico_path',
   'text' => $user->name,
   'ico_path' => $user->picture,
+  'alt_ico' => 'user',
   'class'=> 'avatar',
   'default_wheight' => 1,
   'perm_state' => array(0,1),
@@ -249,11 +279,12 @@ function _prl_get_element($request,$option){
  
   $element['setting'] = array(
   'text' => t('Edit Profile'),
+  'description' => 'di test',
   'ico' => TRUE,
   'path' => 'user' . '/' . $user->uid . '/edit',
   'class' => 'setting',
   'default_wheight'=>-9,
-  'perm_state' => array(0,1),
+  'perm_state' => array(0,1)
   );
 
   $element['email']=array(
@@ -284,33 +315,47 @@ function _prl_get_element($request,$option){
   );
 
   $element['topancor']=array(
-  'text'=>t('top'),
+  'text'=>FALSE,
+  'description'=>'Link to top of page',
   'ico' => TRUE,
   'class'=>'topancor',
-  'path'=>'#peerreviewlogin_top_page',
+  'path'=> $_GET["q"],
+  'path_option' => array('fragment'=>'peerreviewlogin_top_page','html'=>TRUE),
   'default_wheight'=>2,
   'perm_state' => array(1,1),
   );
   
   $element['homelink']=array(
-  'text'=>t('Home'),
+  'text'=>FALSE,
+  'description'=>'Link to home',
   'option' => FALSE,
   'path'=> $base_url,
-  'ico' => TRUE,
+  'ico' => 'home',
   'class'=>'homelink',
   'default_wheight'=> 3,
   'perm_state' => array(1,1),
   );
+  
+  $element['default']=array(
+  'text'=>t('Imposta il Modulo'),
+  'description' => t('Pulsante di default'),
+  'option' => FALSE,
+  'path'=> 'admin/build/perreviewlogin',
+  'ico' => 'question',
+  'class'=>'default',
+  'default_wheight'=> 1,
+  'perm_state' => array(1,1),
+  );
 
-  $element['search'] = array(
+  /*$element['search'] = array(
   'text' => drupal_get_form('search_form'),
   'option' => 'form',
   'path' => FALSE,
   'ico' => TRUE,
   'class' => 'search-form',
   'default_wheight'=> 15,
-  'perm_state' => array(1,1),
-  );
+  'perm_state' => array(0,0),
+  );*/
  
    $element['loginform'] = array(
   'text' => drupal_get_form('user_login_block'),
@@ -320,17 +365,8 @@ function _prl_get_element($request,$option){
   'class' => 'login-form',
   'default_wheight'=> 0,
   'perm_state' => array(1,0),
-  ); 
- 
-  $element['default'] = array(
-  'text' => 'default',
-  'option' => FALSE, 
-  'path' => FALSE,
-  'ico' => TRUE,
-  'class' => 'default',
-  'default_wheight'=> 0,
-  'perm_state' => array(0,0)
   );
+ 
   
   
   /**
@@ -365,7 +401,6 @@ function _prl_get_element($request,$option){
   return $avaliable;
   }
   
-  
   //Processing of requested element
   if(isset($request) && isset($element[$request])){
     if($element[$request]['perm_state'][$current_state]) {
@@ -398,7 +433,7 @@ function _prl_get_element($request,$option){
       * Alternative are complete name (with extension) of icon (es. nameicon)
       **/
     if($option != 'ico_path'){
-      if(!($element[$request]['ico'])) { //Default value are "FALSE"
+      if(!($element[$request]['ico'])) {
         $ico = _prl_ico($request,'');
       } else if($element[$request]['ico'] === TRUE) {
         $ico = _prl_ico($request,'');
@@ -407,6 +442,9 @@ function _prl_get_element($request,$option){
       }
     } else if($option == 'ico_path'){
       $ico = _prl_ico('ico-path',array('path'=>$element[$request]['ico_path']));
+    }
+    if(!($ico) && (isset($element[$request]['alt_ico']))){
+      $ico = _prl_ico($element[$request]['alt_ico'],'');
     }
     
     /**
@@ -417,6 +455,9 @@ function _prl_get_element($request,$option){
     } else if(!($element[$request]['text'])) {
       $text = t($request); // if not present any tex, use ID of Requested element
     }
+    if($element[$request]['text']===FALSE) {
+      $text = null;
+    }
     
     /**
       * Implementation of PATH options
@@ -425,17 +466,28 @@ function _prl_get_element($request,$option){
       $text = $text;
       $ico = $ico;
     } else if($element[$request]['path'] || ($option !== 'no_link')) {
-      $text = l($text,$element[$request]['path'],array('html'=>TRUE));
-      $ico = l($ico,$element[$request]['path'],array('html'=>TRUE));
+        if($element[$request]['path_option']){
+          $options = $element[$request]['path_option'];
+        } else if (!($element[$request]['path_option'])){
+          $options = array('html'=>TRUE);
+        }
+      $text = l($text, $element[$request]['path'], $options);
+      $ico = l($ico, $element[$request]['path'], $options);
+        if(isset($element[$request]['description'])){
+        //overlay description with jquery effect
+        $ico = $ico . '<em>' . $element[$request]['description'] . '</em>';
+        }
     }
-
-    if(!(isset($ico))){
-      return _prl_span(_prl_span($text,$class),$class . '-button');
-    }
-
-    return _prl_span(_prl_span($ico,$class) .  _prl_span($text,$class),$class . '-button');
-
     
+    if(!(isset($ico))) {
+      return _prl_span(_prl_span($text, $class), $class . '-button');
+    }
+
+    if(!(isset($text))) {
+      return _prl_span(_prl_span($ico, $class), $class . '-button');
+    }
+
+    return _prl_span(_prl_span($ico, $class) .  _prl_span($text, $class), $class . '-button');
     }
   }
 
@@ -443,7 +495,8 @@ function _prl_get_element($request,$option){
 
 
 function _prl_span($content,$attrib) {
-  return '<span class="peerreview- ' . $attrib . '">' . $content . '</span>';
+  //test of em fadeToogle to description
+  return '<span class="palette_palette element-' . $attrib . '">' . $content . '</span>';
 }
 
 function _prl_ico($attrib,$opt) {
@@ -451,7 +504,7 @@ function _prl_ico($attrib,$opt) {
   global $user;
   $icopath = drupal_get_path('module', 'peerreview_login') .'/img/ico/'; 
   $var = variable_get('peerreview_login_buttons','');
-  
+ 
   if(isset($opt['ico'])) {
     $icon = $icopath . $opt['ico'];
   }
@@ -461,16 +514,14 @@ function _prl_ico($attrib,$opt) {
   else if(!(isset($opt['path'])) && !(isset($opt['ico']))) {
     $icon = $icopath . $attrib .'.png';
   }
-  
+  if(!(file_exists($icon))){
+    return FALSE;  
+  }
   if($opt['size']=='none') {
     return '<img src="' . $icon . '" alt="' . $user->name . '-' . $attrib .'" class="ico ' . $attrib . '" />'; 
   }
 return '<img src="' . $icon . '" alt="' . $user->name . '-' . $attrib .'" '. variable_get('peerreview_login_bar_height', '') . '" width="'. variable_get('peerreview_login_bar_height', '') . '" class="ico ' . $attrib . '" />';
 }
 
-function _prl_check_opt_override(){
-$out='';
-  
-  
-return $out;
-}
+
+

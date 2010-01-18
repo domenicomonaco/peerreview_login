@@ -4,7 +4,6 @@ name = Peerreview Login Box
 description = Useful Login Box
 package = peerreview
 dependencies[] = block
-dependencies[] = profile
 core = 6.x
 
 ; Information added by drupal.org packaging script on 2009-09-23

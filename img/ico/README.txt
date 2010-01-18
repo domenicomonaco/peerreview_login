@@ -1,10 +1,6 @@
 /* $Id: */
 
--- SUMMARY --
--- REQUIREMENTS --
--- INSTALLATION --
--- CONFIGURATION --
--- NOTES --
--- USAGE --
--- CUSTOMIZATION --
 -- CONTACT --
+-- Domenico Monaco 
+-- kiuz.4ever@gmail.com 
+-- http://www.kiuz.it

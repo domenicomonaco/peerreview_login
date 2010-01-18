@@ -1,18 +1,35 @@
 .palette{
-  background:#333 none repeat scroll 0 0;
-  border-left:1px solid #000;
-  border-top:1px solid #000;
+  background:#333333 none repeat scroll 0 0;
+  border-color:#000000;
+  border-style:solid;
+  border-width:5px 5px 1px 5px;
   bottom:0;
-  color:#fff;
+  clear:both;
+  color:#FFFFFF;
   font-size:13px;
-  right:0;
   margin-right:20px;
   padding:7px;
   position:fixed;
-  clear:both;
+  right:0;
+}
+.palette a {
+  color:#c1c1c1;
+  text-decoration:none;
+}
+
+.palette a:hover{
+  color:#fff;
+  text-decoration:none;
+}
+.palette a:active{
+  color:#ffff00;
+  text-decoration:none;
 }
 .box_box{  
-  background:#333 none repeat scroll 0 0;
+  background:#333333 none repeat scroll 0 0;
+  border-color:#000000;
+  border-style:solid;
+  border-width:5px 5px 5px 5px;
   color:#fff;
   width:320px;
   position:absolute;
@@ -38,4 +55,45 @@
 }
 .peerreview-buttons .form-text{
   width:100px;
+}
+
+#block-peerreview_login-0 h2{
+  display:none;
+}
+
+.box_box  #user-login-form .item-list ul{
+  margin:0px;
+  padding:0px;
+}
+.box_box  #user-login-form .item-list li{
+  list-style:none;
+  background:none;
+  margin:0px;
+  padding:3px;
+  padding-right:10px;
+  margin:3px;
+  background:#000;
+  text-align:center;
+  font-size:14px;
+}
+.box_box #user-login-form li a:link{
+  color:#c9c9c9;
+}
+.box_box  #user-login-form input{
+  font-size:20px;
+  width:90%;
+  background:#cfcfcf;
+  border:0px;
+  text-align:center;
+}
+.palette_palette em {
+  color:#fff;
+  height:40px;
+  background:#333;
+  position:absolute;
+	text-align: center;
+  width:120px;
+	right:0px;
+  bottom:50px;
+  display:none;
 }
